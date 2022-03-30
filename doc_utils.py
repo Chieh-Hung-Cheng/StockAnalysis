@@ -1,6 +1,7 @@
 import os
 import csv
 import pandas
+import pandas as pd
 
 base_pth = os.path.dirname(__file__)
 data_pth = os.path.join(base_pth, 'data')
@@ -14,21 +15,22 @@ def csv_to_list(doc_pth):
 
 
 def csv_to_df(doc_path):
-    with open(doc_path, newline='', encoding='utf-8') as f:
-        df = pandas.read_csv()
-        return df
+    df = pandas.read_csv(doc_path, error_bad_lines=False)
+    return df
 
 
-def get_news(typ):
+def get_news():
     postfixes = ['2019', '2020', '2021']
-    if typ == 'lst':
-        ret_lst = []
+    # if typ == 'lst':
+    ret_lst = []
+    for postfix in postfixes:
+        ret_lst += csv_to_list(os.path.join(raw_pth, 'news_{}.csv'.format(postfix)))
+    return ret_lst
+    '''elif typ == 'df':
+        ret_df = pandas.DataFrame()
         for postfix in postfixes:
-            ret_lst += csv_to_list(os.path.join(raw_pth, 'news_{}.csv'.format(postfix)))
-        return ret_lst
-    elif typ == 'df':
-        for postfix in postfixes:
-            csv_to_df(os.path.join(raw_pth, 'news_{}.csv'.format(postfix)))
+            pandas.concat([ret_df, csv_to_df(os.path.join(raw_pth, 'news_{}.csv'.format(postfix)))])
+        return ret_df'''
 
 
 def get_forums():
@@ -48,17 +50,39 @@ def get_bbs():
 
 
 def get_stock_data():
-    df = pandas.read_excel(os.path.join(raw_pth, 'stock_data_2019-2021.xlsx'), sheet_name='上市2021')
-    return df
+    '''
+    xls = pd.ExcelFile(os.path.join(raw_pth, 'stock_data_2019-2021.xlsx'))
+    markets = ['上市']  # , '上櫃']
+    years = ['2019', '2020', '2021']
+    df_lst = []
+    for market in markets:
+        for year in years:
+            df_lst.append(pd.read_excel(xls, '{}{}'.format(market,year)))
+        return pd.concat(df_lst, axis=0)
 
 
-def doctest():
-    news_lst = get_news('df')
-    # forum_lst = get_forums()
-    # bbs_lst = get_bbs()
+    years = ['2019'] #, '2020', '2021']
+    sheetname = '{}{}'.format(markets[0], years[0])
+
+    dfs_lst = []
+    for market in markets:
+        df_lst = []
+        for year in years:
+            
+            df_lst.append(pd.read_excel(os.path.join(raw_pth, 'stock_data_2019-2021.xlsx'), sheet_name=sheetname))
+        dfs_lst.append(pd.concat(df_lst, axis=0))
+
+    df = pd.read_excel(os.path.join(raw_pth, 'stock_data_2019-2021.xlsx'), sheet_name=sheetname)
+    return df'''
+
+
+def doc_test():
+    news_lst = get_news()
+    forum_lst = get_forums()
+    bbs_lst = get_bbs()
     stock_lst = get_stock_data()
     pass
 
 
 if __name__ == '__main__':
-    doctest()
+    doc_test()
