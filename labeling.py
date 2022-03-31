@@ -1,7 +1,7 @@
 import time
 
 import doc_utils
-import datetime
+from datetime import datetime
 from tqdm import tqdm
 
 
@@ -35,7 +35,7 @@ def gen_stock_trend(stock_name, stocks_lst, tgt_dict, width=5):
             up_lst.append(date_price_lst[i][1])
         elif down:
             down_lst.append(date_price_lst[i][1])
-    tgt_dict[stock_name]= {'UPs': up_lst, 'DOWNs': down_lst}
+    tgt_dict[stock_name] = {'UPs': up_lst, 'DOWNs': down_lst}
 
 
 def gen_trends_for_stocks(stocks=('0050 元大台灣50', '2330 台積電'), gen_all_stocks=False, years=('2021', '2020', '2019')):
@@ -50,9 +50,30 @@ def gen_trends_for_stocks(stocks=('0050 元大台灣50', '2330 台積電'), gen_
 
 
 def labeling_test():
-    ret_dict = gen_trends_for_stocks(gen_all_stocks=True)
-    # gen_stock_trend('0050 元大台灣50', stocks_lst, tgtdict)
-    pass
+    stock_trend_dict = gen_trends_for_stocks(stocks=['0050 元大台灣50'], years=['2021'])
+    header, news = doc_utils.get_infos(source='news', years=['2021'])
+
+    time_idx = header.index('post_time')
+    up_news = []
+    down_news = []
+    for key, value in stock_trend_dict.items():
+        # Each Stock
+        stock_name = key
+        trend = value
+        for line in tqdm(news):
+            info_time = datetime.strptime(line[time_idx], '%Y-%m-%d %H:%M:%S')
+            for up_day in trend['UPs']:
+                trend_date = datetime.strptime(up_day, '%Y/%m/%d')
+                if info_time < trend_date: break
+                if (info_time - trend_date).days == 0:
+                    up_news.append(line)
+            for down_day in trend['DOWNs']:
+                trend_date = datetime.strptime(down_day, '%Y/%m/%d')
+                if info_time < trend_date: break
+                if (info_time - trend_date).days == 0:
+                    down_news.append(line)
+
+        pass
 
 
 if __name__ == '__main__':

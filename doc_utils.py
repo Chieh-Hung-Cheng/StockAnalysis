@@ -27,7 +27,7 @@ def get_infos(source='news', years=('2021', '2020', '2019'), ret_header=True):
     header_exist = False
     for year in years:
         if not header_exist:
-            ret_header = csv_to_list(os.path.join(raw_pth, '{}_{}.csv'.format(source, year)))[0:1]
+            ret_header = csv_to_list(os.path.join(raw_pth, '{}_{}.csv'.format(source, year)))[0]  # :1]
             header_exist = True
         ret_lst += csv_to_list(os.path.join(raw_pth, '{}_{}.csv'.format(source, year)))[1:]
     if ret_header:
@@ -44,7 +44,7 @@ def get_stocks(mkt_typ='0', years=('2021', '2020', '2019'), ret_header=True):
     header_exist = False
     for year in years:
         tmp = csv_to_list(os.path.join(raw_pth, 'stock_{}_{}.csv'.format(year, mkt_typ)))
-        header = tmp[0:1]
+        header = tmp[0]  # :1]
         tmp = tmp[1:]
         tmp.reverse()
         if not header_exist:
@@ -59,14 +59,10 @@ def get_stocks(mkt_typ='0', years=('2021', '2020', '2019'), ret_header=True):
 
 
 def doc_test():
-    info_header, info = get_infos(years=['2021'], source='news')
-    stock_header, stock = get_stocks(years=['2021'])
-    y  = ['2020/1/31', '2020/1/26', '2020/12/3', '2020/2/1','2015/5/25']
-    ans = []
-    for i in y:
-        ans.append(datetime.strptime(i, '%Y/%m/%d'))
-    ans.sort()
-    print(ans[1]-ans[0])
+    # info_header, info = get_infos(years=['2021'], source='news')
+    # stock_header, stock = get_stocks(years=['2021'])
+    stock = datetime.strptime('2015-05-19 00:00:00', '%Y-%m-%d %H:%M:%S')
+    info = datetime.strptime('2015-05-19 09:30:51', '%Y-%m-%d %H:%M:%S')
     pass
 
 
