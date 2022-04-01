@@ -92,6 +92,12 @@ class Labeler:
             return up_news, down_news
 
     def gen_freqs(self):
+        import monpa
+        from monpa import utils
+        monpa.use_gpu = True
+
+
+
         tf_up_ctr = Counter()
         df_up_ctr = Counter()
         tf_down_ctr = Counter()
@@ -136,6 +142,19 @@ class Labeler:
                                             N_up=len(self.up_news_idxes),
                                             N_down=len(self.down_news_idxes)))
         doc_utils.phraselst_2_json(phrase_lst)
+
+    def split_sentence_to_phrase(self, sentence):
+        short_sentences = utils.short_sentence(sentence)
+        slices = []
+        if monpa.use_gpu:
+            result_cut_batch = monpa.cut_batch(short_sentences)
+            for i in result_cut_batch:
+                slices += i
+        else:
+            for elm in short_sentences:
+                slices += monpa.cut(elm)
+
+        return [i for i in slices if len(i) >= 2]
 
 
 def labeling_test():

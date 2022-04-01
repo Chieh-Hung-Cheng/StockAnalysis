@@ -1,11 +1,34 @@
 import math
 import doc_utils
-import monpa
-from monpa import utils
 
 
 class Phrase:
     def __init__(self, **kwargs):
+        self.name = None
+        # Frequencies
+        self.tf_up = None
+        self.df_up = None
+        self.tf_down = None
+        self.df_down = None
+        # Numbers
+        self.N_up = None
+        self.N_down = None
+        # Associative
+        self.tfidf_up = None
+        self.MI_up = None
+        self.chisq_up = None
+        self.supp_up = None
+        self.conf_up = None
+        self.lift_up = None
+
+        self.tfidf_down = None
+        self.MI_down = None
+        self.chisq_down = None
+        self.supp_down = None
+        self.conf_down = None
+        self.lift_down = None
+
+        # Update
         self.__dict__.update(kwargs)
         self.tf_all = self.tf_up + self.tf_down
         self.df_all = self.df_up + self.df_down
@@ -53,16 +76,23 @@ class Phrase:
             expected = self.df_all * self.N_down / self.N_all
             self.chisq_down = (1 if self.df_down > expected else -1) * (self.df_down - expected) ** 2 / expected
 
+    def __str__(self):
+        frqstr = 'Phrase:{}\nUP: tf={}, df={} / {}\nDN: tf={}, df={} / {}\nALL: tf={}, df={} / {}\n' \
+            .format(self.name, self.tf_up, self.df_up, self.N_up, self.tf_down, self.df_down, self.N_down, self.tf_all,
+                    self.df_all, self.N_all)
+        ascstr = 'UP: MI={:.3f}, tfidf={:.3f}, support={:.3f}, confidence={:.3f}, lift={:.3f}, CHISQ={:.3f}\nDN: MI={:.3f}, tfidf={:.3f}, support={:.3f}, confidence={:.3f}, lift={:.3f}, CHISQ={:.3f}' \
+            .format(self.MI_up, self.tfidf_up, self.supp_up, self.conf_up, self.lift_up, self.chisq_up,
+                    self.MI_down, self.tfidf_down, self.supp_down, self.conf_down, self.lift_down, self.chisq_down)
 
-def split_sentence_to_phrase(sentence):
-    short_sentences = utils.short_sentence(sentence)
-    slices = []
-    for elm in short_sentences:
-        slices += monpa.cut(elm)
+        return frqstr + ascstr + '\n' + '-' * 30 + '\n'
 
-    return [i for i in slices if len(i) >= 2]
+
+
+def phrase_test():
+    x = split_sentence_to_phrase(
+        '一開始韓國這邊居家快篩是可以在藥妝店&藥局、網路上買到，後來大爆炸後政府禁止網路&藥妝店。這些通路販售轉由便利商店&藥局販售，每人每天限購5個，每個6000韓幣，大約150台幣左右')
+    pass
 
 
 if __name__ == '__main__':
-    split_sentence_to_phrase(
-        '一開始韓國這邊居家快篩是可以在藥妝店&藥局、網路上買到，後來大爆炸後政府禁止網路&藥妝店。這些通路販售轉由便利商店&藥局販售，每人每天限購5個，每個6000韓幣，大約150台幣左右')
+    phrase_test()
