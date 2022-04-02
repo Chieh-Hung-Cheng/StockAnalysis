@@ -7,21 +7,24 @@ import phrase
 
 class Labeler:
     def __init__(self, stocks=('0050 元大台灣50',), sources=('news',), years=('2021',), all_stock_tf=False):
+        # Argument input
         self.stocks = stocks
         self.sources = sources
         self.years = years
 
+        # Read data from CSV
         self.stocks_header, self.stocks_lst = doc_utils.get_stocks(years=self.years)
         if all_stock_tf:
             self.stocks = set(i[0] for i in self.stocks_lst)
 
         if 'news' in sources:
             self.news_header, self.news_lst = doc_utils.get_infos(source='news', years=self.years)
-        if 'bbs' in sources:
-            self.bbs_header, self.bbs_lst = doc_utils.get_infos(source='bbs', years=self.years)
+        # if 'bbs' in sources:
+        #     self.bbs_header, self.bbs_lst = doc_utils.get_infos(source='bbs', years=self.years)
         if 'forum' in sources:
             self.forum_header, self.forum_lst = doc_utils.get_infos(source='forum', years=self.years)
 
+        # Generate trend for specified stocks
         self.stock_trend_dict = {}
         self.gen_trends_4_stocks()
 
@@ -37,11 +40,12 @@ class Labeler:
         for i in range(len(date_price_lst) - width):
             up = True
             down = True
+            prev = 0
             for j in range(width):
                 if j == 0:
-                    prev = date_price_lst[i + j][5]
+                    prev = float(date_price_lst[i + j][5])
                 else:
-                    now = date_price_lst[i + j][5]
+                    now = float(date_price_lst[i + j][5])
                     if now > prev:
                         down = False
                     elif now < prev:
@@ -51,9 +55,10 @@ class Labeler:
                         down = False
                     prev = now
             # Append passing date to list
-            if up:
+            threshold = 0.05
+            if up and float(date_price_lst[i + width][5]) > (1+threshold) * float(date_price_lst[i][5]):
                 up_lst.append(date_price_lst[i][1])
-            elif down:
+            elif down and float(date_price_lst[i+width][5]) < (1-threshold) * float(date_price_lst[i][5]):
                 down_lst.append(date_price_lst[i][1])
         self.stock_trend_dict[stock_name] = {'UPs': up_lst, 'DOWNs': down_lst}
 
@@ -68,19 +73,17 @@ class Labeler:
         self.up_news_idxes = []
         down_news = []
         self.down_news_idxes = []
-        for key, value in self.stock_trend_dict.items():
+        for stock_name, trends in self.stock_trend_dict.items():
             # Each Stock
-            stock_name = key
-            trend = value
             for idx, line in enumerate(tqdm(self.news_lst)):
                 info_time = datetime.strptime(line[time_idx], '%Y-%m-%d %H:%M:%S')
-                for up_day in trend['UPs']:
+                for up_day in trends['UPs']:
                     trend_date = datetime.strptime(up_day, '%Y/%m/%d')
                     if info_time < trend_date: break
                     if (info_time - trend_date).days == 0:
                         up_news.append(line)
                         self.up_news_idxes.append(idx)
-                for down_day in trend['DOWNs']:
+                for down_day in trends['DOWNs']:
                     trend_date = datetime.strptime(down_day, '%Y/%m/%d')
                     if info_time < trend_date: break
                     if (info_time - trend_date).days == 0:
@@ -91,13 +94,7 @@ class Labeler:
         else:
             return up_news, down_news
 
-    def gen_freqs(self):
-        import monpa
-        from monpa import utils
-        monpa.use_gpu = True
-
-
-
+    def gen_freqs(self, save=False):
         tf_up_ctr = Counter()
         df_up_ctr = Counter()
         tf_down_ctr = Counter()
@@ -108,14 +105,14 @@ class Labeler:
         for idx in tqdm(self.up_news_idxes):
             line = self.news_lst[idx]
             content = line[title_idx] + line[content_idx]
-            slices = phrase.split_sentence_to_phrase(content)
+            slices = self.split_sentence_to_phrase(content)
             tf_up_ctr += Counter(slices)
             df_up_ctr += Counter(set(slices))
 
         for idx in tqdm(self.down_news_idxes):
             line = self.news_lst[idx]
             content = line[title_idx] + line[content_idx]
-            slices = phrase.split_sentence_to_phrase(content)
+            slices = self.split_sentence_to_phrase(content)
             tf_down_ctr += Counter(slices)
             df_down_ctr += Counter(set(slices))
 
@@ -141,9 +138,11 @@ class Labeler:
                                             df_down=df_down_ctr[name] if name in df_down_ctr else 0,
                                             N_up=len(self.up_news_idxes),
                                             N_down=len(self.down_news_idxes)))
-        doc_utils.phraselst_2_json(phrase_lst)
+        if save: doc_utils.phraselst_2_json(phrase_lst)
 
     def split_sentence_to_phrase(self, sentence):
+        import monpa
+        from monpa import utils
         short_sentences = utils.short_sentence(sentence)
         slices = []
         if monpa.use_gpu:

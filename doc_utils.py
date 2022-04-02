@@ -18,16 +18,30 @@ def csv_to_list(doc_pth):
         return lst
 
 
+def get_bbs(ret_header=True):
+    # Read news or forums
+    ret_lst = []
+    ret_header = []
+    lst = csv_to_list(os.path.join(raw_pth, 'bda2022_mid_bbs_2019-2021.csv'))
+    ret_header = lst[0]  # :1]
+    ret_lst = lst[1:]
+    if ret_header:
+        return ret_header, ret_lst
+    else:
+        return ret_lst
+
+
 def get_infos(source='news', years=('2021', '2020', '2019'), ret_header=True):
+    # Read news or forums
     years = sorted(years)
     ret_lst = []
     ret_header = []
     header_exist = False
     for year in years:
         if not header_exist:
-            ret_header = csv_to_list(os.path.join(raw_pth, '{}_{}.csv'.format(source, year)))[0]  # :1]
+            ret_header = csv_to_list(os.path.join(raw_pth, 'bda2022_mid_{}_{}.csv'.format(source, year)))[0]  # :1]
             header_exist = True
-        ret_lst += csv_to_list(os.path.join(raw_pth, '{}_{}.csv'.format(source, year)))[1:]
+        ret_lst += csv_to_list(os.path.join(raw_pth, 'bda2022_mid_{}_{}.csv'.format(source, year)))[1:]
     if ret_header:
         return ret_header, ret_lst
     else:
@@ -73,10 +87,10 @@ def json_2_phraselst(path=os.path.join(pros_pth, 'phraselist.json')):
 
 
 def doc_test():
-    # info_header, info = get_infos(years=['2021'], source='news')
-    # stock_header, stock = get_stocks(years=['2021'])
-    stock = datetime.strptime('2015-05-19 00:00:00', '%Y-%m-%d %H:%M:%S')
-    info = datetime.strptime('2015-05-19 09:30:51', '%Y-%m-%d %H:%M:%S')
+    info_header, info = get_infos(years=['2021'], source='forum')
+    stock_header, stock = get_stocks(years=['2021'])
+    bbs_header, bbs = get_bbs()
+
     pass
 
 

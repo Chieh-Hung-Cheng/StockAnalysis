@@ -1,5 +1,6 @@
 import math
 import doc_utils
+import labeling
 
 
 class Phrase:
@@ -84,13 +85,13 @@ class Phrase:
             .format(self.MI_up, self.tfidf_up, self.supp_up, self.conf_up, self.lift_up, self.chisq_up,
                     self.MI_down, self.tfidf_down, self.supp_down, self.conf_down, self.lift_down, self.chisq_down)
 
-        return frqstr + ascstr + '\n' + '-' * 30 + '\n'
 
 
 
 def phrase_test():
-    x = split_sentence_to_phrase(
+    x = labeling.Labeler().split_sentence_to_phrase(
         '一開始韓國這邊居家快篩是可以在藥妝店&藥局、網路上買到，後來大爆炸後政府禁止網路&藥妝店。這些通路販售轉由便利商店&藥局販售，每人每天限購5個，每個6000韓幣，大約150台幣左右')
+    print(x)
     pass
 
 
