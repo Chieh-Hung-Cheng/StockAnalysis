@@ -35,10 +35,10 @@ class Phrase:
         self.df_all = self.df_up + self.df_down
         self.N_all = self.N_up + self.N_down
         for elm in ['up', 'down']:
-            self.calc_MI(elm)
+            # self.calc_MI(elm)
             self.calc_tfidf(elm)
-            self.calc_assocs(elm)
-            self.calc_chisq(elm)
+            # self.calc_assocs(elm)
+            # self.calc_chisq(elm)
 
     def calc_MI(self, lmttyp):
         # MI = log(N(XY) / (N(X)N(Y)), belongs to df
@@ -78,14 +78,19 @@ class Phrase:
             self.chisq_down = (1 if self.df_down > expected else -1) * (self.df_down - expected) ** 2 / expected
 
     def __str__(self):
-        frqstr = 'Phrase:{}\nUP: tf={}, df={} / {}\nDN: tf={}, df={} / {}\nALL: tf={}, df={} / {}\n' \
+        '''frqstr = 'Phrase:{}\nUP: tf={}, df={} / {}\nDN: tf={}, df={} / {}\nALL: tf={}, df={} / {}\n' \
             .format(self.name, self.tf_up, self.df_up, self.N_up, self.tf_down, self.df_down, self.N_down, self.tf_all,
                     self.df_all, self.N_all)
         ascstr = 'UP: MI={:.3f}, tfidf={:.3f}, support={:.3f}, confidence={:.3f}, lift={:.3f}, CHISQ={:.3f}\nDN: MI={:.3f}, tfidf={:.3f}, support={:.3f}, confidence={:.3f}, lift={:.3f}, CHISQ={:.3f}' \
             .format(self.MI_up, self.tfidf_up, self.supp_up, self.conf_up, self.lift_up, self.chisq_up,
                     self.MI_down, self.tfidf_down, self.supp_down, self.conf_down, self.lift_down, self.chisq_down)
-        return frqstr + ascstr + '\n' + '_'*30 + '\n'
+        return frqstr + ascstr + '\n' + '_'*30 + '\n'''
+        frqstr = 'Phrase:{}\nUP: tf={}, df={}, tfidf={}/ {}\nDN: tf={}, df={}, tfidf={} / \nALL: tf={}, df={} / {}\n' \
+            .format(self.name, self.tf_up, self.df_up, self.tfidf_up, self.N_up,
+                    self.tf_down, self.df_down, self.tfidf_down, self.N_down,
+                    self.tf_all, self.df_all, self.N_ttl)
 
+        return frqstr + '\n' + '-' * 30
 
 
 def phrase_test():

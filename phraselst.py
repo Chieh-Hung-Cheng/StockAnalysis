@@ -4,13 +4,13 @@ import copy
 import other_utils
 
 class Phraselst:
-    def __init__(self, key=None, nums=1000, **kwargs):
-        self.phraselst = doc_utils.json_to_phraselst('./data/pros/phraselist_0401.json')
+    def __init__(self, filename='phraselist', key=None, nums=1000, **kwargs):
+        self.phraselst = doc_utils.json_to_phraselst('{}.json'.format(filename))
         self.key = key
         self.filter(**kwargs)
         self.sort_phraselst(self.key)
-        self.eliminate_digit()
-        # self.crop(nums)
+        # self.namelst = [i.name for i in self.phraselst]
+        self.crop(nums)
 
     def filter(self, **kwargs):
         for key, val in kwargs.items():
@@ -22,6 +22,9 @@ class Phraselst:
 
     def sort_phraselst(self, fun):
         self.phraselst.sort(key=fun, reverse=True)
+
+    def get_namelst(self):
+        return [i.name for i in self.phraselst]
 
     def show_phrases(self, nums=100, compact=True):
         cnt = 0
@@ -38,13 +41,16 @@ class Phraselst:
         if nums < len(self.phraselst): print('...Omitting {} elements'.format(len(self.phraselst) - nums))
         print('Total {} elements'.format(len(self.phraselst)))
 
-    def exclude(self, other):
+    def __sub__(self, other):  # exclde
         ret_phraselst = copy.copy(self)
-        ret_phraselst.phraselst = [i for i in ret_phraselst.phraselst if i not in other.phraselst]
+        ret_phraselst.phraselst = [i for i in ret_phraselst.phraselst if
+                                   i.name not in [j.name for j in other.phraselst]]  # other.namelst
         return ret_phraselst
 
-    def eliminate_digit(self):
-        self.phraselst = [i for i in self.phraselst if not has_digit(i.name)]
+    def __add__(self, other):
+        ret_phraselst = copy.copy(self)
+        ret_phraselst.phraselst = self.phraselst + other.phraselst
+        return ret_phraselst
 
 
 

@@ -2,17 +2,34 @@ import os
 import csv
 
 import numpy as np
-import pandas
 from datetime import datetime
 import pandas as pd
 import json
 import phrase
-import openpyxl
+from collections import Counter
+
+# import openpyxl
 
 base_pth = os.path.dirname(__file__)
 data_pth = os.path.join(base_pth, 'data')
 raw_pth = os.path.join(data_pth, 'bda2022_dataset')
 pros_pth = os.path.join(data_pth, 'pros')
+
+
+def csv_to_df(path):
+    return pd.read_csv(path)
+
+
+def df_to_csv(df, path):
+    df.to_csv(path, encoding='utf_8_sig')
+
+
+def get_news_df():
+    news2019 = csv_to_df(os.path.join(raw_pth, 'bda2022_mid_news_2019.csv'))
+    news2020 = csv_to_df(os.path.join(raw_pth, 'bda2022_mid_news_2020.csv'))
+    news2021 = csv_to_df(os.path.join(raw_pth, 'bda2022_mid_news_2021.csv'))
+    news = pd.concat([news2019, news2020, news2021])
+    return news
 
 
 def csv_to_list(doc_pth):
@@ -104,6 +121,18 @@ def json_to_phraselst(filename='phraselist.json'):
     return ret_list
 
 
+def ctr_to_json(counter, category, frqtype='tf'):
+    with open(os.path.join(pros_pth, '{}_{}.json'.format(frqtype, category), 'w')) as file:
+        json.dump(counter, file)
+        print('Save Counter Complete')
+
+
+def json_to_ctr(category, frqtype):
+    with open(os.path.join(pros_pth, '{}_{}.json'.format(frqtype, category), 'r')) as file:
+        counter = Counter(json.load(file))
+        print('Load Counter Complete')
+
+
 def to_json(data, filename='jsonfile_{}'.format(datetime.now().strftime('%m%d%H%M'))):
     path = os.path.join(pros_pth, filename)
     with open(path, 'w') as file:
@@ -115,8 +144,8 @@ def doc_test():
     # info_header, info = get_infos(years=['2021'], source='forum')
     # stock_header, stock = get_stocks(years=['2021'])
     # xlsx_to_csv()
-    bbs_header, bbs = get_bbs(years=('2021','2019'))
-    y=0
+    bbs_header, bbs = get_bbs(years=('2021', '2019'))
+    y = 0
     # bbs_header, bbs = get_bbs()
 
     pass
